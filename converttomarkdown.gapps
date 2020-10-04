@@ -78,13 +78,19 @@ function ConvertToMarkdownFile() {
   var file = DriveApp.getFileById(id);
   var parents = file.getParents();
   
-  if(parents.length > 1) {
+  var howmanyparents = 0;
+
+  while(parents.hasNext()){
+    howmanyparents++
+  }
+
+  if(howmanyparents > 1) {
     Logger.log("File has multiple parent directory. Script does not work in this case"); 
     DocumentApp.getUi().alert("Document must not be in multiple directories");
     return; 
   }
   
-  if(parents.length == 0) {
+  if(howmanyparents == 0) {
     DocumentApp.getUi().alert("Document has to be in a directory for the export"); 
     return; 
   }
