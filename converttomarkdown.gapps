@@ -90,11 +90,11 @@ function ConvertToMarkdownFile() {
   }
   
   // Use first parent
-  var parent = parents[0];
+  var parent = parents.next();
   
   // Check if target folder exists  
-  for(var folder in parent.getFolders()) {
-    folder = parent.getFolders()[folder]; 
+  while(parent.getFolders().hasNext()) {
+    var folder = parent.getFolders().next(); 
     
     if(folder.getName() == 'target') {
       var ui = DocumentApp.getUi(); 
