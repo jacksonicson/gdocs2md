@@ -75,7 +75,7 @@ function ConvertToMarkdownFile() {
   
   // Create folder
   var id = DocumentApp.getActiveDocument().getId();
-  var file = DocsList.getFileById(id);
+  var file = DriveApp.getFileById(id);
   var parents = file.getParents();
   
   if(parents.length > 1) {
