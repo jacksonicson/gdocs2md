@@ -303,9 +303,14 @@ function handleText(doc, state) {
     // Handle links
     if(doc.getLinkUrl(index)) {
       var url = doc.getLinkUrl(index);
-      while(doc.getLinkUrl(attrs[i-1]) === url){
-        i--;
-        index = attrs[i];
+      if(attrs[i-1]!=null){
+        while(doc.getLinkUrl(attrs[i-1]) === url){
+          i--;
+          index = attrs[i];
+          if(attrs[i-1]==null){
+            break;
+          }
+        }   
       }
       formatted = formatted.substring(0, index) + '[' + formatted.substring(index, lastIndex) + '](' + url + ')' + formatted.substring(lastIndex);
       
