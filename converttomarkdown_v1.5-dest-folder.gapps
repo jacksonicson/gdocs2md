@@ -1,3 +1,6 @@
+// Global variable your selected destination folder
+var dstfldr = 'YOUR_FOLDER_ID_HERE';
+
 // Open handler to add Menu
 function onOpen(e) {
   var ui = DocumentApp.getUi();
@@ -78,61 +81,36 @@ function ConvertToMarkdownFile() {
   var file = DriveApp.getFileById(id);
   var parents = file.getParents();
   
-  var howmanyparents = 0;
+  // Find the target folder 
+  var found = DriveApp.getFolderById(dstfldr);
 
-  while(parents.hasNext()){
-    howmanyparents++
-  }
-
-  if(howmanyparents > 1) {
-    Logger.log("File has multiple parent directory. Script does not work in this case"); 
-    DocumentApp.getUi().alert("Document must not be in multiple directories");
-    return; 
-  }
-  
-  if(howmanyparents == 0) {
-    DocumentApp.getUi().alert("Document has to be in a directory for the export"); 
-    return; 
-  }
-  
-  // Use first parent
-  var parent = parents.next();
-  
-  // Check if target folder exists  
-  while(parent.getFolders().hasNext()) {
-    var folder = parent.getFolders().next(); 
-    
-    if(folder.getName() == 'target') {
-      var ui = DocumentApp.getUi(); 
-      var result = ui.alert(
-        'Existing target folder found!',
-        'Delete all contents of target folder?',
-        ui.ButtonSet.YES_NO);
-      if(result == ui.Button.YES) {
-        Logger.log("Trashing target folder..."); 
-        folder.setTrashed(true); 
-        break; 
-      } else {
-        Logger.log("Do not delete target folder, stopping!"); 
-        return; 
-      }
-    }
-  }
-  
-  // Create new target folder 
-  Logger.log("Creating output folder..."); 
-  var found = parent.createFolder("target"); 
-  
   // Write all files to target folder
   for(var file in convertedDoc.files) {
     file = convertedDoc.files[file];
     var blob = file.blob.copyBlob();
     var name = file.name; 
+    
+    while(found.getFilesByName(name).hasNext()){
+      var currentimagefile = found.getFilesByName(name).next();
+      if(currentimagefile.getName() == name){
+        currentimagefile.setTrashed(true);
+      }
+    }
     blob.setName(name); 
     found.createFile(blob); 
   }
   
   // Write mardown file to target folder
+  var filename = DocumentApp.getActiveDocument().getName() + ".md";
+  
+  while(found.getFilesByName(filename).hasNext()){
+    var currentfile = found.getFilesByName(filename).next();
+    if(currentfile.getName() == filename){
+      currentfile.setContent(convertedDoc.text)
+      return
+    }
+  }
+  
   found.createFile(DocumentApp.getActiveDocument().getName() + ".md", convertedDoc.text, "text/plain");   
 }
 
@@ -325,10 +303,14 @@ function handleText(doc, state) {
     // Handle links
     if(doc.getLinkUrl(index)) {
       var url = doc.getLinkUrl(index);
-      if (i > 0 && attrs[i-1] == index - 1 && doc.getLinkUrl(attrs[i-1]) === url) {
-        i -= 1;
-        index = attrs[i];
-        url = txt.getLinkUrl(off);
+      if(attrs[i-1]!=null){
+        while(doc.getLinkUrl(attrs[i-1]) === url){
+          i--;
+          index = attrs[i];
+          if(attrs[i-1]==null){
+            break;
+          }
+        }   
       }
       formatted = formatted.substring(0, index) + '[' + formatted.substring(index, lastIndex) + '](' + url + ')' + formatted.substring(lastIndex);
       

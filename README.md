@@ -5,6 +5,17 @@ A simple Google Apps script to convert a properly formatted Google Drive Documen
 
 ![Screenshot Google Docs with gdocs2md](markdown.png)
 
+## :warning: Updates on this repo
+
+Proceed carefully. Take some time to experiment and learn how it works. I take no responsibility for lost documents.
+
+This repo introduces 2 new versions for the file export feature:
+- v1.5 where you specify the destination folder (need to edit the first variable on the script file)
+- v2 where it saves the files on the same folder where the google document is located.
+
+Both versions update files instead deleting an entire subfolder. (with exception to images, they are actually deleted and reuploaded).
+Hope this is useful for other ppl. If you're curious I'm using this to be able to get a regular backup on github of an important document I'm working on :)
+
 ## Usage
 
   * Adding this script to your doc (once per doc):

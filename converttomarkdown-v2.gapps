@@ -78,10 +78,13 @@ function ConvertToMarkdownFile() {
   var file = DriveApp.getFileById(id);
   var parents = file.getParents();
   
+  /*
+  // if the folder is on a computer backup location it will hang on this process. Go figure!
   var howmanyparents = 0;
 
   while(parents.hasNext()){
-    howmanyparents++
+    howmanyparents++;
+    //DocumentApp.getUi().alert("total number of parents: "+howmanyparents);
   }
 
   if(howmanyparents > 1) {
@@ -94,46 +97,43 @@ function ConvertToMarkdownFile() {
     DocumentApp.getUi().alert("Document has to be in a directory for the export"); 
     return; 
   }
-  
+  */
+
   // Use first parent
   var parent = parents.next();
   
-  // Check if target folder exists  
-  while(parent.getFolders().hasNext()) {
-    var folder = parent.getFolders().next(); 
-    
-    if(folder.getName() == 'target') {
-      var ui = DocumentApp.getUi(); 
-      var result = ui.alert(
-        'Existing target folder found!',
-        'Delete all contents of target folder?',
-        ui.ButtonSet.YES_NO);
-      if(result == ui.Button.YES) {
-        Logger.log("Trashing target folder..."); 
-        folder.setTrashed(true); 
-        break; 
-      } else {
-        Logger.log("Do not delete target folder, stopping!"); 
-        return; 
-      }
-    }
-  }
-  
   // Create new target folder 
-  Logger.log("Creating output folder..."); 
-  var found = parent.createFolder("target"); 
-  
+  //var found = parent.createFolder("target"); 
+  //var found = DriveApp.getFolderById('YOUR_FOLDER_ID_HERE');
+
   // Write all files to target folder
   for(var file in convertedDoc.files) {
     file = convertedDoc.files[file];
     var blob = file.blob.copyBlob();
     var name = file.name; 
+    
+    while(parent.getFilesByName(name).hasNext()){
+      var currentimagefile = parent.getFilesByName(name).next();
+      if(currentimagefile.getName() == name){
+        currentimagefile.setTrashed(true);
+      }
+    }
     blob.setName(name); 
-    found.createFile(blob); 
+    parent.createFile(blob); 
   }
   
   // Write mardown file to target folder
-  found.createFile(DocumentApp.getActiveDocument().getName() + ".md", convertedDoc.text, "text/plain");   
+  var filename = DocumentApp.getActiveDocument().getName() + ".md";
+  
+  while(parent.getFilesByName(filename).hasNext()){
+    var currentfile = parent.getFilesByName(filename).next();
+    if(currentfile.getName() == filename){
+      currentfile.setContent(convertedDoc.text)
+      return
+    }
+  }
+  
+  parent.createFile(filename, convertedDoc.text, "text/plain");   
 }
 
 function processSection(section) {
